@@ -269,6 +269,23 @@
 </head>
 
 
+<body>
+
+<header class="page-header">
+  <h1 class="title-main">- 안녕! 김효정 회계사님 - </h1>
+</header>
+
+<!-- 🧷 포스트잇 오버레이 (공간 차지 ❌) -->
+<div id="stickyContainer"
+     style="position:fixed; inset:0; z-index:150;">
+</div>
+
+
+<audio id="bgMusic" loop preload="auto">
+  <source src="assets/bgm.mp3" type="audio/mpeg">
+</audio>
+
+
 
 <button
   id="addStickyBtn"
@@ -288,21 +305,6 @@
 >
   ➕ 포스트잇 붙이기
 </button>
-
-<audio id="bgMusic" loop>
-  <source src="assets/bgm.mp3" type="audio/mpeg">
-</audio>
-
-<body>
-
-<header class="page-header">
-  <h1 class="title-main">- 안녕! 김효정 회계사님 - </h1>
-</header>
-
-<!-- 🧷 포스트잇 오버레이 (공간 차지 ❌) -->
-<div id="stickyContainer"
-     style="position:fixed; inset:0; z-index:150;">
-</div>
 
 
 <div class="container">
@@ -786,6 +788,24 @@ photos.forEach(p => {
     const writeCard = document.getElementById("writeCard");
     writeCard.classList.toggle("hidden");
     writeCard.scrollIntoView({ behavior: "smooth" });
+  });
+
+// 배경음악
+  window.addEventListener("load", () => {
+    const bgm = document.getElementById("bgMusic");
+
+    function startBgm() {
+      console.log("🎵 click detected");
+      bgm.volume = 0.4;
+
+      bgm.play()
+        .then(() => console.log("🎵 bgm playing"))
+        .catch(err => console.error("❌ play blocked", err));
+
+      document.removeEventListener("click", startBgm);
+    }
+
+    document.addEventListener("click", startBgm);
   });
 
 </script>
