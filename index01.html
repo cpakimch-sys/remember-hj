@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>김효정 회계사님을 기억하며</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      padding: 40px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      margin-top: 8px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 12px;
+      padding: 8px 16px;
+      border: none;
+      background: #111827;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #374151;
+    }
+    .thanks {
+      color: #16a34a;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+    #list .card {
+      background: #f9fafb;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>김효정 회계사님을 기억하며</h1>
+
+  <div class="card">
+    <p>
+      김효정 회계사님을 조용히 기억하고자 이 공간을 남깁니다.<br />
+      함께했던 시간과 말하지 못한 마음들을 기록합니다.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>기억 남기기</h2>
+    <textarea id="message" placeholder="당신의 기억을 남겨주세요"></textarea>
+    <div style="margin-top:10px;">
+      <input type="file" id="image" accept="image/*" />
+    </div>
+    <button id="submitBtn">기억 남기기</button>
+    <div id="thanks" class="thanks" style="display:none;">
+      잘 받았어요. 고마워요.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>남겨진 기억들</h2>
+    <div id="list"></div>
+  </div>
+
+</div>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    "https://upxuhfajteosglolyctq.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVweHVoZmFqdGVvc2dsb2x5Y3RxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MjY5MzAsImV4cCI6MjA4MjUwMjkzMH0.ZlN9--ksRnn92I0vRqEB2Ph88vixMHo5uKyBG1qDbGM"
+  );
+
+  async function submitMemory() {
+    const message = document.getElementById("message").value;
+    const fileInput = document.getElementById("image");
+    const submitBtn = document.getElementById("submitBtn");
+    let imageUrl = null;
+
+    if (!message.trim()) {
+      alert("내용을 입력해주세요.");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "전송 중...";
+
+    try {
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const fileName = `${Date.now()}_${file.name}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from("uploads")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error("파일 업로드 에러:", uploadError);
+        } else {
+          const { data: urlData } = supabaseClient
+            .storage
+            .from("uploads")
+            .getPublicUrl(fileName);
+          imageUrl = urlData.publicUrl;
+        }
+      }
+
+      const { error: insertError } = await supabaseClient
+        .from("memories")
+        .insert([{ message, image_url: imageUrl }]);
+
+      if (insertError) throw insertError;
+
+      document.getElementById("thanks").style.display = "block";
+      document.getElementById("message").value = "";
+      fileInput.value = "";
+
+      await loadMemories();
+
+      setTimeout(() => {
+        document.getElementById("thanks").style.display = "none";
+      }, 3000);
+    } catch (err) {
+      console.error("에러 발생:", err);
+      alert("저장 중 문제가 발생했어요.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "기억 남기기";
+    }
+  }
+
+  async function loadMemories() {
+    const { data, error } = await supabaseClient
+      .from("memories")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("불러오기 에러:", error);
+      return;
+    }
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    data.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      const createdAt = new Date(item.created_at);
+      const formattedDate = createdAt.toLocaleString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      div.innerHTML = `
+        <p style="white-space: pre-wrap;">${item.message}</p>
+        ${item.image_url ? `<img src="${item.image_url}" alt="memory image" />` : ""}
+        <div style="margin-top: 8px; font-size: 0.875rem; color: #6b7280;">작성일: ${formattedDate}</div>
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+  document.getElementById("submitBtn").addEventListener("click", submitMemory);
+  window.addEventListener("DOMContentLoaded", loadMemories);
+</script>
+</body>
+</html>

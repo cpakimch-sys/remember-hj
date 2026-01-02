@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>안녕! 김효정회계사님</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      padding: 40px;
+    }
+    .container {
+    max-width: 1100px;   /* 🔹 핵심 */
+    margin: 0 auto;
+    padding: 40px 20px;  /* 모바일 안전 */
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      margin-top: 8px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 12px;
+      padding: 8px 16px;
+      border: none;
+      background: #111827;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #374151;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+    .hidden {
+      display: none;
+    }
+
+  /* 🎴 엽서 사진 컬럼 */
+.main-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.postcard-column {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.postcard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.postcard {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.postcard img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+
+.postcard-caption {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #4b5563;
+  text-align: center;
+  background: #fafafa;
+}
+
+/* 🌸 메인 타이틀 */
+.title-main {
+  font-size: 10rem;        /* 3.2rem → 정확히 2배 */
+  font-weight: 800;         /* 1000은 과함 */
+  text-align: center;
+  margin-bottom: 20px;      /* 여백도 절반 */
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+
+  font-family:
+    "Arial Rounded MT Bold",
+    "Segoe UI Rounded",
+    "Apple SD Gothic Neo",
+    "NanumSquareRound",
+    system-ui,
+    sans-serif;
+}
+
+.page-header {
+  padding: 40px 20px 25px;
+  text-align: center;
+}
+
+.title-main {
+  font-size: 3.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 600px) {
+  .title-main {
+    font-size: 3.6rem;
+  }
+
+  .page-header {
+    padding: 20px 20px 12px;
+  }
+}
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1 class="title-main">안녕! 김효정 회계사님</h1>
+</header>
+
+<div class="container">
+  <div class="main-layout">
+
+    <!-- 🎴 왼쪽 엽서 사진 -->
+    <div class="postcard-column">
+      <div class="postcard-list">
+
+        <div class="postcard">
+          <img src="photo1.png" alt="김효정 회계사님과 아이">
+          <div class="postcard-caption">
+            함께 웃던 날
+          </div>
+        </div>
+
+        <div class="postcard">
+          <img src="photo2.png" alt="김효정 회계사님">
+          <div class="postcard-caption">
+            가장 따뜻했던 순간
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 👉 오른쪽: 기존 내용 (그대로) -->
+    <div class="content-area">
+
+      <!-- 로그인 카드 -->
+      <div id="loginCard" class="card">
+        <button onclick="loginWithGoogle()">🔐 구글로 로그인</button>
+      </div>
+
+      <!-- 글 작성 -->
+      <div id="writeCard" class="card hidden">
+        <h2>기억 남기기</h2>
+        <textarea id="message" placeholder="당신의 기억을 남겨주세요"></textarea>
+        <input type="file" id="image" accept="image/*" />
+        <button id="submitBtn">기억 남기기</button>
+      </div>
+
+      <!-- 목록 -->
+      <div id="listCard" class="card hidden">
+        <h2>남겨진 기억들</h2>
+        <div id="list"></div>
+      </div>
+
+    </div> <!-- content-area -->
+
+  </div> <!-- main-layout -->
+</div> <!-- container -->
+
+
+
+
+<!-- 💬 회신 팝업 -->
+<div id="replyModal" class="hidden"
+     style="
+       position: fixed;
+       inset: 0;
+       background: rgba(0,0,0,0.4);
+       align-items: center;
+       justify-content: center;
+       z-index: 999;
+     ">
+  <div style="
+       background: white;
+       width: 360px;
+       padding: 24px;
+       border-radius: 12px;
+       text-align: center;
+       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+     ">
+    <h3 style="margin-bottom: 12px;">김효정 회계사님</h3>
+    <p id="replyText" style="margin-bottom: 20px; line-height: 1.6;">
+      글 잘 읽었어요. 고마워요.
+    </p>
+    <button onclick="closeReply()">닫기</button>
+  </div>
+</div>
+
+
+<script>
+  /* ✅ Supabase 클라이언트 (하나만!) */
+  const supabaseClient = window.supabase.createClient(
+  "https://upxuhfajteosglolyctq.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVweHVoZmFqdGVvc2dsb2x5Y3RxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MjY5MzAsImV4cCI6MjA4MjUwMjkzMH0.ZlN9--ksRnn92I0vRqEB2Ph88vixMHo5uKyBG1qDbGM",
+    {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: "pkce"
+    }
+    }
+  );
+
+  /* ✅ 구글 로그인 */
+  async function loginWithGoogle() {
+  await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin
+      }
+    });
+  }
+
+  /* ✅ 로그인 상태 체크 */
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    if (session) {
+      document.getElementById("loginCard").classList.add("hidden");
+      document.getElementById("writeCard").classList.remove("hidden");
+      document.getElementById("listCard").classList.remove("hidden");
+      loadMemories();
+    }
+  });
+
+  /* ✅ 글 저장 */
+  async function submitMemory() {
+    const message = document.getElementById("message").value;
+    const fileInput = document.getElementById("image");
+    let imageUrl = null;
+
+    if (!message.trim()) return;
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const fileName = `${Date.now()}_${file.name}`;
+
+      const { error } = await supabaseClient
+        .storage
+        .from("uploads")
+        .upload(fileName, file);
+
+      if (!error) {
+        imageUrl = supabaseClient
+          .storage
+          .from("uploads")
+          .getPublicUrl(fileName).data.publicUrl;
+      }
+    }
+
+    const {
+  data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  const author =
+    session?.user?.user_metadata?.full_name ||
+    session?.user?.email ||
+    "익명";
+
+  await supabaseClient.from("memories").insert([
+    {
+      message,
+      image_url: imageUrl,
+      author
+    }
+  ]);
+
+    document.getElementById("message").value = "";
+    fileInput.value = "";
+    loadMemories();
+    showReply();
+  }
+
+  document
+    .getElementById("submitBtn")
+    .addEventListener("click", submitMemory);
+
+  
+  /* ==========================
+     💬 김효정 회계사님 회신 팝업
+     ========================== */
+
+  const replyMessages = [
+    "글 잘 읽었어요. 고마워요.",
+    "당신의 마음이 전해졌어요. 정말 고마워요.",
+    "이렇게 기억해줘서 감사해요.",
+    "따뜻한 마음, 잘 받았어요.",
+    "읽으면서 웃고 울었어요. 고마워요."
+  ];
+
+  function showReply() {
+    const modal = document.getElementById("replyModal");
+    const text = document.getElementById("replyText");
+
+    const msg =
+      replyMessages[Math.floor(Math.random() * replyMessages.length)];
+
+    text.innerText = msg;
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+  }
+
+  function closeReply() {
+    const modal = document.getElementById("replyModal");
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+
+
+
+  /* ✅ 글 불러오기 */
+  async function loadMemories() {
+    const { data } = await supabaseClient
+      .from("memories")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    data.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      const date = new Date(item.created_at).toLocaleString("ko-KR");
+
+      div.innerHTML = `
+      <p style="white-space: pre-wrap;">${item.message}</p>
+
+      ${item.image_url ? `<img src="${item.image_url}" />` : ""}
+
+      <div style="margin-top:8px; font-size:13px; color:#6b7280;">
+        <strong>${item.author || "익명"}</strong>
+        · 작성일: ${date}
+  </div>
+  `;
+   list.appendChild(div);
+    });
+  }
+
+  /* ✅ 새로고침 후 로그인 유지 */
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      document.getElementById("loginCard").classList.add("hidden");
+      document.getElementById("writeCard").classList.remove("hidden");
+      document.getElementById("listCard").classList.remove("hidden");
+      loadMemories();
+    }
+  });
+
+(async () => {
+  const { data, error } = await supabaseClient.auth.getSession();
+  console.log("세션 체크:", data, error);
+
+  if (data?.session) {
+    document.getElementById("loginCard").classList.add("hidden");
+    document.getElementById("writeCard").classList.remove("hidden");
+    document.getElementById("listCard").classList.remove("hidden");
+    loadMemories();
+  }
+})();
+
+
+</script>
+
+</body>
+</html>
