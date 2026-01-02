@@ -286,6 +286,10 @@
 </audio>
 
 
+  <!-- 🔘 테스트 버튼 (확인용, 나중에 지워도 됨) -->
+  <button id="testBtn" style="position:fixed; top:20px; left:20px; z-index:999;">
+    TEST PLAY
+  </button>
 
 <button
   id="addStickyBtn"
@@ -790,23 +794,17 @@ photos.forEach(p => {
     writeCard.scrollIntoView({ behavior: "smooth" });
   });
 
-// 배경음악
-  window.addEventListener("load", () => {
+// 이게 안 뜨면 구조가 아직 깨진 것 (테스트용)
+    alert("JS LOADED"); 
+
     const bgm = document.getElementById("bgMusic");
 
-    function startBgm() {
-      console.log("🎵 click detected");
+    document.getElementById("testBtn").addEventListener("click", () => {
+      alert("BUTTON CLICK");
       bgm.volume = 0.4;
+      bgm.play().catch(err => alert(err));
+    });
 
-      bgm.play()
-        .then(() => console.log("🎵 bgm playing"))
-        .catch(err => console.error("❌ play blocked", err));
-
-      document.removeEventListener("click", startBgm);
-    }
-
-    document.addEventListener("click", startBgm);
-  });
 
 </script>
 
